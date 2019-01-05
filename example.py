@@ -2,7 +2,7 @@ from selenium_scraper import SeleniumScraper
 
 
 def main():
-    scraper = SeleniumScraper()
+    scraper = SeleniumScraper(path_driver="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe")
     categories = ['Rose flower', 'Tulip flower']
     nb_img_example = scraper.begin_scrap(categories)
 

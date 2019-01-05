@@ -11,8 +11,9 @@ from selenium.webdriver.common.keys import Keys
 
 
 class SeleniumScraper:
-    def __init__(self, driver='Chromium', dest='.', quality='min', limit=0, google=True, pexel=False, imgur=False):
+    def __init__(self, driver='Chromium', path_driver=None, dest='.', quality='min', limit=0, google=True, pexel=False, imgur=False):
         self.driver = driver
+        self.path_driver = path_driver
 
         if dest == "." or dest == "./":
             self.dest = ""
@@ -77,8 +78,7 @@ class SeleniumScraper:
             # Calculate new scroll height and compare with last scroll height
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
-                try:
-                    # click sur le bouton "+ de résultat"
+                try:  # Click on the more result button
                     driver.find_element_by_xpath('//*[@id="smb"]').click()
                 except:
                     break
@@ -100,7 +100,7 @@ class SeleniumScraper:
                               'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
                               'Chrome/36.0.1941.0 Safari/537.36')]
         urllib.request.install_opener(opener)
-        # End résolution du bug
+        # End bug
 
         self.my_mkdir(directory)
         i = 0
@@ -202,10 +202,10 @@ class SeleniumScraper:
         else:
             nb_img_to_scrap = len(img_s) * 7
         # ----------------------------
-        # Min quality Operation : Récupération de toutes les images miniature
+        # Min quality Operation
         # ----------------------------
         if quality == 'min':
-            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " éléments to scrap ... ", len(img_s) - 1)
+            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(img_s) - 1)
             bar.start()
             for i, img in enumerate(img_s):
                 try:
@@ -233,10 +233,10 @@ class SeleniumScraper:
         # ----------------------------
 
         # ----------------------------
-        # Max quality Operation : Récupération de toutes les images en qualité original, opération + longue
+        # Max quality Operation : long operation
         # ----------------------------
         if quality == 'max':
-            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " éléments to scrap ... ", len(img_s) - 1)
+            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(img_s) - 1)
             bar.start()
             for img in img_s:
                 dothis = True
@@ -247,8 +247,7 @@ class SeleniumScraper:
                 card_imgs_s = driver.find_elements_by_css_selector('.irc_rii')
                 for index, card_img in enumerate(card_imgs_s):
                     if index == 7:
-                        # card_imgs_s contient 8 éléments, le dernier étant le "aficher plus de résultat"
-                        # sur google image, il ne faut donc pas l'inclure
+                        # card_imgs_s got 8 elements, the last one is "more result"
                         break
                     dothis2 = True
                     try:
@@ -266,7 +265,7 @@ class SeleniumScraper:
                             except:
                                 pass
 
-                # Cette partie enregistre l'image principale cliqué
+                # Get the main clicked image
                 if dothis is True:
                     selected_imgs = driver.find_elements_by_css_selector('.irc_mi')
                     for selected_img in selected_imgs:
@@ -296,13 +295,13 @@ class SeleniumScraper:
             nb_img_to_scrap = self.limit
         else:
             nb_img_to_scrap = len(images)
-        bar = self.init_progressbar("imgur_search : " + str(nb_img_to_scrap) + " éléments to scrap ... ", len(images) - 1)
+        bar = self.init_progressbar("imgur_search : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(images) - 1)
         bar.start()
         for image in images:
             if self.nb_img_scraped >= self.limit:
                 break
             src = image.get_attribute('src')
-            src = src[:27] + src[28:]  # enleve le b du string pour avoir le lien des images de bonnes qualité
+            src = src[:27] + src[28:]  # miss the b to get the right link
             list_url = self.my_append(list_url, src)
         bar.finish()
         return list(set(list_url))
@@ -320,7 +319,7 @@ class SeleniumScraper:
             nb_img_to_scrap = self.limit
         else:
             nb_img_to_scrap = len(images)
-        bar = self.init_progressbar("pexel_search : " + str(nb_img_to_scrap) + " éléments to scrap ... ", len(images) - 1)
+        bar = self.init_progressbar("pexel_search : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(images) - 1)
         bar.start()
         if quality == 'max':
             for image in images:
@@ -350,12 +349,12 @@ class SeleniumScraper:
         else:
             categories = category
 
-        driver = self.init_driver(self.driver)
+        driver = self.init_driver(self.driver, self.path_driver)
         for category in categories:
             directory_name = self.dest + category.replace(' ', '_') + "_" + self.quality
             file_name = category.replace(' ', '_') + "_" + self.quality + ".txt"
             if not self.check_step_done("url_img", file_name):
-                print("\nCréation de ", file_name, " ... ")
+                print("\nCreation of ", file_name, " ... ")
 
                 if self.google is True:
                     self.nb_img_scraped = 0

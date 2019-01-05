@@ -31,7 +31,7 @@ nb__img_example_2 = scraper2.begin_scrap("Dandelion")
 ```
 
 ------------------
-- `driver` supported :
+`driver` supported :
 ```python
 driver="Chromium"  # default -- use Chrome headless
 driver="Chrome"
@@ -39,40 +39,57 @@ driver="Firefox"
 driver="PhantomJS"
 ```
 ------------------
-- `dest` : path destination
+`path_driver` supported :
+```python
+path_driver=None  # default -- use path environment
+path_driver="/usr/bin/google-chrome"  # Linux style
+path_driver="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"  # Windows style
+```
+------------------
+`dest` : path destination
 ```python
 dest="."  # default
 ```
 ------------------
-- `quality` : quality of image's downloaded
+`quality` : quality of image's downloaded
 ```python
 dest="min"  # default
 dest="max"
 ```
 ------------------
-- `limit` : limit of images to download for each website activated
+`limit` : limit of images to download for each website activated
 ```python
 limit=0  # default -- 0 means unlimited (by the website)
 ```
 ------------------
-- `google` : path destination
+`google` : path destination
 ```python
 google=True  # default
 google=False
 ```
 ------------------
-- `pexel` : path destination
+`pexel` : path destination
 ```python
 pexel=True  # default
 pexel=False
 ```
 ------------------
-- `imgur` : path destination
+`imgur` : path destination
 ```python
 imgur=True  # default
 imgur=False
 ```
 ------------------
+
+## Requirement
+
+You need to install and add to path if you want automated detection of your driver :
+
+- Chrome : http://chromedriver.chromium.org/downloads
+- Firefox : https://github.com/mozilla/geckodriver/releases
+- PhantomJS : http://phantomjs.org/download.html
+
+Or you will have to give the path manually in the option.
 
 ## Licence
 
