@@ -4,7 +4,7 @@ Use SeleniumScraper if you need a dataset of images.
 
 This scraper can download images from Google Image, Imgur, and Pexel.  
 
-SeleniumScraper is compatible with: __Python 2.7-3.7__.
+SeleniumScraper is compatible with: __Python >= 3.__.
 
 This module will **not** work to scrap any underage content.
 
@@ -89,7 +89,7 @@ You need to install and add to path if you want automated detection of your driv
 - Firefox : https://github.com/mozilla/geckodriver/releases
 - PhantomJS : http://phantomjs.org/download.html
 
-Or you will have to give the path manually in the option.
+Otherwise you will have to give the path manually in the option.
 
 ## Licence
 
