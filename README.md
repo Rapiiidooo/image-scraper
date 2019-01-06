@@ -39,7 +39,7 @@ driver="Firefox"
 driver="PhantomJS"
 ```
 ------------------
-`path_driver` supported :
+`path_driver` :
 ```python
 path_driver=None  # default -- use path environment
 path_driver="/usr/bin/google-chrome"  # Linux style
@@ -62,19 +62,19 @@ dest="max"
 limit=0  # default -- 0 means unlimited (by the website)
 ```
 ------------------
-`google` : path destination
+`google` : Google Image search
 ```python
 google=True  # default
 google=False
 ```
 ------------------
-`pexel` : path destination
+`pexel` : Pexel search
 ```python
 pexel=True  # default
 pexel=False
 ```
 ------------------
-`imgur` : path destination
+`imgur` : Imgur search
 ```python
 imgur=True  # default
 imgur=False
