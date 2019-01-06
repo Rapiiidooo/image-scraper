@@ -70,14 +70,14 @@ google=False
 ------------------
 `pexel` : Pexel search
 ```python
-pexel=True  # default
-pexel=False
+pexel=False  # default
+pexel=True
 ```
 ------------------
 `imgur` : Imgur search
 ```python
-imgur=True  # default
-imgur=False
+imgur=False  # default
+imgur=True
 ```
 ------------------
 
