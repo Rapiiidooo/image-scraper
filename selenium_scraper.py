@@ -11,7 +11,9 @@ from selenium.webdriver.common.keys import Keys
 
 
 class SeleniumScraper:
-    def __init__(self, driver='Chromium', path_driver=None, dest='.', quality='min', limit=0, google=True, pexel=False, imgur=False):
+
+    def __init__(self, driver='Chromium', path_driver=None, dest='.', quality='min', limit=0, keep_url_file=False,
+                 google=True, pexel=False, imgur=False):
         self.driver = driver
         self.path_driver = path_driver
 
@@ -33,6 +35,7 @@ class SeleniumScraper:
         self.imgur = imgur
         self.urls = []
         self.nb_img_scraped = 0
+        self.keep_url_file = keep_url_file
         pass
 
     @staticmethod
@@ -50,6 +53,8 @@ class SeleniumScraper:
                 driver = webdriver.Firefox(executable_path=path if path is not None else "geckodriver")
             elif str_driver == 'PhantomJS':
                 driver = webdriver.PhantomJS(executable_path=path if path is not None else "phantomjs")
+            elif str_driver == 'Safari':
+                driver = webdriver.Safari(executable_path=path if path is not None else "/usr/bin/safaridriver")
             else:
                 print('Driver not yet supported.')
                 raise Exception
@@ -105,7 +110,7 @@ class SeleniumScraper:
         self.my_mkdir(directory)
         i = 0
         str_index = 0
-        num_lines = sum(1 for line in open(my_file))
+        num_lines = sum(1 for _ in open(my_file))
         bar = self.init_progressbar(str(num_lines - 1) + ' from all websites to download ...', num_lines)
         bar.start()
         with open(my_file, "r+") as f:
@@ -205,7 +210,8 @@ class SeleniumScraper:
         # Min quality Operation
         # ----------------------------
         if quality == 'min':
-            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(img_s) - 1)
+            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " elements to scrap ... ",
+                                        len(img_s) - 1)
             bar.start()
             for i, img in enumerate(img_s):
                 try:
@@ -236,7 +242,8 @@ class SeleniumScraper:
         # Max quality Operation : long operation
         # ----------------------------
         if quality == 'max':
-            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(img_s) - 1)
+            bar = self.init_progressbar("ggsearch : " + str(nb_img_to_scrap) + " elements to scrap ... ",
+                                        len(img_s) - 1)
             bar.start()
             for img in img_s:
                 dothis = True
@@ -295,7 +302,8 @@ class SeleniumScraper:
             nb_img_to_scrap = self.limit
         else:
             nb_img_to_scrap = len(images)
-        bar = self.init_progressbar("imgur_search : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(images) - 1)
+        bar = self.init_progressbar("imgur_search : " + str(nb_img_to_scrap) + " elements to scrap ... ",
+                                    len(images) - 1)
         bar.start()
         for image in images:
             if self.nb_img_scraped >= self.limit:
@@ -319,7 +327,8 @@ class SeleniumScraper:
             nb_img_to_scrap = self.limit
         else:
             nb_img_to_scrap = len(images)
-        bar = self.init_progressbar("pexel_search : " + str(nb_img_to_scrap) + " elements to scrap ... ", len(images) - 1)
+        bar = self.init_progressbar("pexel_search : " + str(nb_img_to_scrap) + " elements to scrap ... ",
+                                    len(images) - 1)
         bar.start()
         if quality == 'max':
             for image in images:
@@ -352,7 +361,7 @@ class SeleniumScraper:
         driver = self.init_driver(self.driver, self.path_driver)
         for category in categories:
             directory_name = self.dest + category.replace(' ', '_') + "_" + self.quality
-            file_name = category.replace(' ', '_') + "_" + self.quality + ".txt"
+            file_name = self.dest + category.replace(' ', '_') + "_" + self.quality + ".txt"
             if not self.check_step_done("url_img", file_name):
                 print("\nCreation of ", file_name, " ... ")
 
@@ -370,7 +379,8 @@ class SeleniumScraper:
                 print(file_name, " ... OK")
             nb_dl = self.download_all(directory_name, file_name)
 
-            os.remove(file_name)
+            if not self.keep_url_file:
+                os.remove(file_name)
             nb_downloads.append(nb_dl)
         driver.close()
         return nb_downloads if len(nb_downloads) > 1 else nb_dl
