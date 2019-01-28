@@ -37,6 +37,7 @@ driver="Chromium"  # default -- use Chrome headless
 driver="Chrome"
 driver="Firefox"
 driver="PhantomJS"
+driver="Safari"
 ```
 ------------------
 `path_driver` :
@@ -44,6 +45,7 @@ driver="PhantomJS"
 path_driver=None  # default -- use path environment
 path_driver="/usr/bin/google-chrome"  # Linux style
 path_driver="C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"  # Windows style
+path_driver="/Applications/Firefox.app/Contents/MacOS/firefox-bin"  # MacOS style
 ```
 ------------------
 `dest` : path destination
@@ -88,6 +90,7 @@ You need to install and add to path if you want automated detection of your driv
 - Chrome : http://chromedriver.chromium.org/downloads
 - Firefox : https://github.com/mozilla/geckodriver/releases
 - PhantomJS : http://phantomjs.org/download.html
+- Safari : safaridriver is native on MacOS
 
 Otherwise you will have to give the path manually in the option.
 

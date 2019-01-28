@@ -50,6 +50,8 @@ class SeleniumScraper:
                 driver = webdriver.Firefox(executable_path=path if path is not None else "geckodriver")
             elif str_driver == 'PhantomJS':
                 driver = webdriver.PhantomJS(executable_path=path if path is not None else "phantomjs")
+            elif str_driver == 'Safari':
+                driver = webdriver.Safari(executable_path=path if path is not None else "/usr/bin/safaridriver")
             else:
                 print('Driver not yet supported.')
                 raise Exception
