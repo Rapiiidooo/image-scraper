@@ -64,6 +64,11 @@ dest="max"
 limit=0  # default -- 0 means unlimited (by the website)
 ```
 ------------------
+`keep_url_file` : don't delete the created file listing all download urls on exit
+```python
+keep_url_file=False  # default
+```
+------------------
 `google` : Google Image search
 ```python
 google=True  # default
