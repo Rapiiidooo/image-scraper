@@ -7,7 +7,9 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, \
     WebDriverException, StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
 import urllib.request
 from urllib.error import HTTPError
 
@@ -282,6 +284,14 @@ class SeleniumScraper:
         list_url = set()
         url = 'https://imgur.com/search?q=' + category
         driver.get(url)
+
+        # manage the allow cookies popup
+        try:
+            element = WebDriverWait(driver, 10) \
+                .until(expected_conditions.element_to_be_clickable((By.CLASS_NAME, "qc-cmp-button")))
+            element.click()
+        except TimeoutException:
+            pass
 
         self.scroll_until_limit(driver, '.image-list-link img')
         images = driver.find_elements_by_css_selector('.image-list-link img')
