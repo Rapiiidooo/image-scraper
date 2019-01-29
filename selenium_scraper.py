@@ -26,15 +26,11 @@ class SeleniumScraper:
 
         self.quality = quality
 
-        if limit == 0:
-            self.limit = 100000
-        else:
-            self.limit = limit
+        self.limit = limit
         self.google = google
         self.pexel = pexel
         self.imgur = imgur
-        self.urls = []
-        self.nb_img_scraped = 0
+        self.urls = set()
         self.keep_url_file = keep_url_file
         pass
 
@@ -160,6 +156,7 @@ class SeleniumScraper:
 
     @staticmethod
     def write_in_file(file_name, dict_data):
+        dict_data.discard(None)
         with open(file_name, 'a+') as text_file:
             for data in dict_data:
                 print("{}".format(data), file=text_file)
@@ -178,17 +175,11 @@ class SeleniumScraper:
             else:
                 raise
 
-    def my_append(self, mylist, val):
-        try:
-            if val not in mylist:
-                mylist.append(val)
-                self.nb_img_scraped += 1
-        except:
-            pass
-        return mylist
+    def is_limit_reached(self, value):
+        return self.limit != 0 and value >= self.limit
 
     def google_search(self, driver, category, quality='min'):
-        list_url = []
+        list_url = set()
         url = "https://images.google.com/?hl=fr"
         driver.get(url)
         driver.find_element_by_xpath('//*[@id="sbtc"]/div/div[1]/input').send_keys(category)
@@ -199,13 +190,10 @@ class SeleniumScraper:
         img_s = driver.find_elements_by_css_selector('.rg_ic.rg_i')
 
         if len(img_s) <= 0:
-            print("No image found. Something wired happened...")
-            return []
+            print("No image found. Something weird happened...")
+            return list_url
 
-        if len(img_s) * 7 > self.limit:
-            nb_img_to_scrap = self.limit
-        else:
-            nb_img_to_scrap = len(img_s) * 7
+        nb_img_to_scrap = min(self.limit, len(img_s * 7))
         # ----------------------------
         # Min quality Operation
         # ----------------------------
@@ -219,15 +207,15 @@ class SeleniumScraper:
                     card_imgs_s = driver.find_elements_by_css_selector('.irc_rii')
                     for card_img in card_imgs_s:
                         try:
-                            if self.nb_img_scraped >= self.limit:
+                            if self.is_limit_reached(len(list_url)):
                                 break
-                            list_url = self.my_append(list_url, card_img.get_attribute('src'))
+                            list_url.add(card_img.get_attribute('src'))
                         except:
                             pass
                     try:
-                        if self.nb_img_scraped >= self.limit:
+                        if self.is_limit_reached(len(list_url)):
                             break
-                        list_url = self.my_append(list_url, img.get_attribute('src'))
+                        list_url.add(img.get_attribute('src'))
                     except:
                         pass
                 except:
@@ -262,86 +250,76 @@ class SeleniumScraper:
                     except:
                         dothis2 = False
 
-                    if dothis2 is True:
+                    if dothis2:
                         card_imgs_selected = driver.find_elements_by_css_selector('.irc_mi')
                         for card_img_selected in card_imgs_selected:
                             try:
-                                if self.nb_img_scraped >= self.limit:
+                                if self.is_limit_reached(len(list_url)):
                                     break
-                                list_url = self.my_append(list_url, card_img_selected.get_attribute('src'))
+                                list_url.add(card_img_selected.get_attribute('src'))
                             except:
                                 pass
 
                 # Get the main clicked image
-                if dothis is True:
+                if dothis:
                     selected_imgs = driver.find_elements_by_css_selector('.irc_mi')
                     for selected_img in selected_imgs:
                         try:
-                            if self.nb_img_scraped >= self.limit:
+                            if self.is_limit_reached(len(list_url)):
                                 break
-                            list_url = self.my_append(list_url, selected_img.get_attribute('src'))
+                            list_url.add(selected_img.get_attribute('src'))
                         except:
                             pass
             bar.finish()
         # ----------------------------
         # End Operation
         # ----------------------------
-        return list(set(list_url))
+        return list_url
 
     def imgur_search(self, driver, category):
-        list_url = []
+        list_url = set()
         url = 'https://imgur.com/search?q=' + category
         driver.get(url)
 
         self.scroll_until_limit(driver, '.image-list-link img')
         images = driver.find_elements_by_css_selector('.image-list-link img')
         if len(images) <= 0:
-            print("No image found. Something wired happened...")
-            return []
-        if len(images) > self.limit:
-            nb_img_to_scrap = self.limit
-        else:
-            nb_img_to_scrap = len(images)
+            print("No image found. Something weird happened...")
+            return list_url
+
+        nb_img_to_scrap = min(self.limit, len(images))
         bar = self.init_progressbar("imgur_search : " + str(nb_img_to_scrap) + " elements to scrap ... ",
                                     len(images) - 1)
         bar.start()
         for image in images:
-            if self.nb_img_scraped >= self.limit:
+            if self.is_limit_reached(len(list_url)):
                 break
             src = image.get_attribute('src')
             src = src[:27] + src[28:]  # miss the b to get the right link
-            list_url = self.my_append(list_url, src)
+            list_url.add(src)
         bar.finish()
-        return list(set(list_url))
+        return list_url
 
     def pexel_search(self, driver, category, quality='min'):
-        list_url = []
+        list_url = set()
         url = 'https://www.pexels.com/search/' + category
         driver.get(url)
         self.scroll_until_limit(driver, '.photo-item__img')
         images = driver.find_elements_by_css_selector('.photo-item__img')
         if len(images) <= 0:
-            print("No image found. Something wired happened...")
-            return []
-        if len(images) > self.limit:
-            nb_img_to_scrap = self.limit
-        else:
-            nb_img_to_scrap = len(images)
+            print("No image found. Something weird happened...")
+            return list_url
+
+        nb_img_to_scrap = min(self.limit, len(images))
         bar = self.init_progressbar("pexel_search : " + str(nb_img_to_scrap) + " elements to scrap ... ",
                                     len(images) - 1)
         bar.start()
-        if quality == 'max':
-            for image in images:
-                if self.nb_img_scraped >= self.limit:
-                    break
-                list_url = self.my_append(list_url, image.get_attribute('data-big-src'))
-        if quality == 'min':
-            for image in images:
-                if self.nb_img_scraped >= self.limit:
-                    break
-                list_url = self.my_append(list_url, image.get_attribute('src'))
+        for image in images:
+            if self.is_limit_reached(len(list_url)):
+                break
+            list_url.add(image.get_attribute('data-big-src' if quality == 'max' else 'src'))
         bar.finish()
-        return list(set(list_url))
+        return list_url
 
     @staticmethod
     def count_files(path):
@@ -350,37 +328,33 @@ class SeleniumScraper:
 
     def begin_scrap(self, category):
         self.my_mkdir(self.dest)
-        categories = []
         nb_downloads = []
         nb_dl = 0
-        if type(category) is not list:
-            categories.append(category)
-        else:
-            categories = category
+        categories = category if type(category) is list else [category]
 
         driver = self.init_driver(self.driver, self.path_driver)
-        for category in categories:
-            directory_name = self.dest + category.replace(' ', '_') + "_" + self.quality
-            file_name = self.dest + category.replace(' ', '_') + "_" + self.quality + ".txt"
-            if not self.check_step_done("url_img", file_name):
-                print("\nCreation of ", file_name, " ... ")
+        try:
+            for category in categories:
+                directory_name = self.dest + category.replace(' ', '_') + "_" + self.quality
+                file_name = self.dest + category.replace(' ', '_') + "_" + self.quality + ".txt"
+                if not self.check_step_done("url_img", file_name):
+                    print("\nCreation of ", file_name, " ... ")
 
-                if self.google is True:
-                    self.nb_img_scraped = 0
-                    self.urls = self.google_search(driver, category, self.quality)
-                if self.pexel is True:
-                    self.nb_img_scraped = 0
-                    self.urls += self.pexel_search(driver, category, self.quality)
-                if self.imgur is True:
-                    self.nb_img_scraped = 0
-                    self.urls += self.imgur_search(driver, category)
-                self.write_in_file(file_name, self.urls)
-            else:
-                print(file_name, " ... OK")
-            nb_dl = self.download_all(directory_name, file_name)
+                    if self.google is True:
+                        self.urls = self.google_search(driver, category, self.quality)
+                    if self.pexel is True:
+                        self.urls |= self.pexel_search(driver, category, self.quality)
+                    if self.imgur is True:
+                        self.urls |= self.imgur_search(driver, category)
+                    self.write_in_file(file_name, self.urls)
+                else:
+                    print(file_name, " ... OK")
+                nb_dl = self.download_all(directory_name, file_name)
 
-            if not self.keep_url_file:
-                os.remove(file_name)
-            nb_downloads.append(nb_dl)
-        driver.close()
-        return nb_downloads if len(nb_downloads) > 1 else nb_dl
+                if not self.keep_url_file:
+                    os.remove(file_name)
+                nb_downloads.append(nb_dl)
+            driver.quit()
+            return nb_downloads if len(nb_downloads) > 1 else nb_dl
+        finally:
+            driver.quit()
