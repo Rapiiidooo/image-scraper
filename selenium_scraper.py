@@ -59,9 +59,10 @@ class SeleniumScraper:
         return driver
 
     @staticmethod
-    def init_progressbar(title, maxval, min_value=-1):
-        bar = progressbar.ProgressBar(maxval=maxval, min_value=min_value,
-                                      widgets=[progressbar.Bar('=', title + ' [', ']'), ' ', progressbar.Percentage()])
+    def init_progressbar(title, max_value, min_value=-1):
+        bar = progressbar.ProgressBar(max_value=max_value, min_value=min_value, poll_interval=1,
+                                      widgets=[title, ' ', progressbar.Bar(marker='=', left='[', right=']'), ' ',
+                                               progressbar.Percentage()])
         return bar
 
     def scroll_until_limit(self, driver, selector=None):
