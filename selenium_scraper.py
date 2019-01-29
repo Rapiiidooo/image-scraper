@@ -297,7 +297,8 @@ class SeleniumScraper:
             if self.is_limit_reached(len(list_url)):
                 break
             src = image.get_attribute('src')
-            src = src[:27] + src[28:]  # miss the b to get the right link
+            if self.quality == 'max':
+                src = src[:-5] + src[-4:]  # remove the b to get the right link
             list_url.add(src)
         bar.finish()
         return list_url
