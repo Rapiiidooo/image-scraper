@@ -1,13 +1,15 @@
 import errno
 import os
-import os.path
-import time
-import urllib.request
 
 import magic
 import progressbar
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, \
+    WebDriverException, StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+import urllib.request
+from urllib.error import HTTPError
 
 
 class SeleniumScraper:
@@ -53,7 +55,7 @@ class SeleniumScraper:
                 driver = webdriver.Safari(executable_path=path if path is not None else "/usr/bin/safaridriver")
             else:
                 print('Driver not yet supported.')
-                raise Exception
+                raise ValueError
         except Exception as e:
             raise e
         return driver
@@ -70,25 +72,26 @@ class SeleniumScraper:
         # Region scroll to the end
         # https://stackoverflow.com/questions/20986631/how-can-i-scroll-a-web-page-using-selenium-webdriver-in-python
         # ----------------------------
-        scroll_limit_pause = 0.5
-        last_height = driver.execute_script("return document.body.scrollHeight")
+        scroll_limit_pause = 3
         while True:
+            current_height = driver.execute_script("return document.body.scrollHeight")
             # Scroll down to bottom
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            # Wait to load page
-            time.sleep(scroll_limit_pause)
-            # Calculate new scroll height and compare with last scroll height
-            new_height = driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
+            try:
+                # Wait to load page
+                # Calculate new scroll height and compare with last scroll height-
+                WebDriverWait(driver, scroll_limit_pause).until(
+                    lambda d: d.execute_script("return document.body.scrollHeight") > current_height)
+            except TimeoutException:
                 try:  # Click on the more result button
                     driver.find_element_by_xpath('//*[@id="smb"]').click()
-                except:
-                    break
-            last_height = new_height
-
-            if selector is not None:
-                if len(driver.find_elements_by_css_selector(selector)) > self.limit:
-                    break
+                except NoSuchElementException:
+                    try:  # Click on the Load more images button
+                        driver.find_element_by_id('load-more').click()  # imgur
+                    except NoSuchElementException:
+                        return
+            if selector is not None and self.is_limit_reached(len(driver.find_elements_by_css_selector(selector))):
+                return
         # ----------------------------
         # End region
         # ----------------------------
@@ -118,13 +121,11 @@ class SeleniumScraper:
                     file_name = file_name.replace(str(i - 100), str(i))
                 try:
                     urllib.request.urlretrieve(line, file_name)
-                except Exception:
-                    if line.__contains__("Step Done."):
-                        pass
-                    # else:
-                    #     print("Error: ", line)
-                    #     print(e)
+                except HTTPError:
                     pass
+                except ValueError as exc:
+                    if "Step Done." not in line:
+                        raise exc
                 bar.update(ibar + 1)
                 i += 1
             bar.finish()
@@ -174,7 +175,7 @@ class SeleniumScraper:
             if exc.errno == errno.EEXIST and os.path.isdir(path):
                 pass
             else:
-                raise
+                raise exc
 
     def is_limit_reached(self, value):
         return self.limit != 0 and value >= self.limit
@@ -211,15 +212,15 @@ class SeleniumScraper:
                             if self.is_limit_reached(len(list_url)):
                                 break
                             list_url.add(card_img.get_attribute('src'))
-                        except:
+                        except NoSuchElementException:
                             pass
                     try:
                         if self.is_limit_reached(len(list_url)):
                             break
                         list_url.add(img.get_attribute('src'))
-                    except:
+                    except NoSuchElementException:
                         pass
-                except:
+                except (ElementNotInteractableException, WebDriverException):
                     pass
                 bar.update(i)
             bar.finish()
@@ -238,7 +239,7 @@ class SeleniumScraper:
                 dothis = True
                 try:
                     img.click()
-                except:
+                except (ElementNotInteractableException, WebDriverException):
                     dothis = False
                 card_imgs_s = driver.find_elements_by_css_selector('.irc_rii')
                 for index, card_img in enumerate(card_imgs_s):
@@ -248,7 +249,7 @@ class SeleniumScraper:
                     dothis2 = True
                     try:
                         card_img.click()
-                    except:
+                    except (StaleElementReferenceException, ElementNotInteractableException, WebDriverException):
                         dothis2 = False
 
                     if dothis2:
@@ -258,7 +259,7 @@ class SeleniumScraper:
                                 if self.is_limit_reached(len(list_url)):
                                     break
                                 list_url.add(card_img_selected.get_attribute('src'))
-                            except:
+                            except NoSuchElementException:
                                 pass
 
                 # Get the main clicked image
@@ -269,7 +270,7 @@ class SeleniumScraper:
                             if self.is_limit_reached(len(list_url)):
                                 break
                             list_url.add(selected_img.get_attribute('src'))
-                        except:
+                        except NoSuchElementException:
                             pass
             bar.finish()
         # ----------------------------
